@@ -17,10 +17,11 @@ void mainloop(void);
 void getnum(void);
 void print_tree(node_t *p);
 void print_err(const char *m);
+void clear_err(void);
+void size(node_t *p, int *count);
 
 node_t *bt = NULL;
 
-void clear_err(void);
 int main (int argc, char **argv)
 {
   setup();
@@ -61,6 +62,8 @@ int lookup(node_t *p, int target)
 void mainloop(void)
 {
   char c;
+  int i;
+
   while((c = getch()) != 'q') {
     switch(c) {
       case 'a':
@@ -70,6 +73,14 @@ void mainloop(void)
         move(1, 1);
         hline(' ', COLS - 2);
         print_tree(bt);
+        refresh();
+        break;
+      case 's':
+        move(1, 1);
+        i = 0;
+        size(bt, &i);
+        hline(' ', COLS - 2);
+        printw("Num elements: %d", i);
         refresh();
         break;
     }
@@ -141,7 +152,19 @@ void setup(void)
   addstr("p");
   attroff(A_REVERSE);
   addstr("rint tree | ");
+  attron(A_REVERSE);
+  addstr("s");
+  attroff(A_REVERSE);
+  addstr("ize | ");
   move(1, 1);
   atexit((void (*)(void))&endwin);
   refresh();
+}
+void size(node_t *p, int *count)
+{
+  if (p == NULL)
+    return;
+  (*count)++;
+  size(p->left, count);
+  size(p->right, count);
 }
