@@ -19,6 +19,7 @@ void print_tree(node_t *p);
 void print_err(const char *m);
 void clear_err(void);
 void size(node_t *p, int *count);
+void print_ordered(node_t *p);
 
 node_t *bt = NULL;
 
@@ -72,7 +73,8 @@ void mainloop(void)
       case 'p':
         move(1, 1);
         hline(' ', COLS - 2);
-        print_tree(bt);
+        print_ordered(bt);
+        /*print_tree(bt);*/
         refresh();
         break;
       case 's':
@@ -167,4 +169,14 @@ void size(node_t *p, int *count)
   (*count)++;
   size(p->left, count);
   size(p->right, count);
+}
+void print_ordered(node_t *p)
+{
+  if (p == NULL)
+    return;
+  if(p->left)
+    print_ordered(p->left);
+  printw("%d, ", p->val);
+  if (p->right)
+    print_ordered(p->right);
 }
