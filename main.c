@@ -20,6 +20,10 @@ void print_err(const char *m);
 void clear_err(void);
 void size(node_t *p, int *count);
 void print_ordered(node_t *p);
+void free_tree(node_t *p);
+node_t *find_and_delete_element(node_t *p, int val);
+node_t *del_element_recurs(node_t *p);
+void request_element_and_remove();
 
 node_t *bt = NULL;
 
@@ -85,6 +89,15 @@ void mainloop(void)
         printw("Num elements: %d", i);
         refresh();
         break;
+      case 'd':
+        free_tree(bt);
+        bt = NULL;
+        move(1, 1);
+        hline(' ', COLS - 2);
+        addstr("Tree deleted.");
+        break;
+      case 'r':
+        request_element_and_remove();
     }
   }
 }
@@ -111,6 +124,9 @@ void getnum(void)
   mvprintw(1, 1, "Input accepted. <%d>", i);
   bt = insert(bt, i);
   hline(' ', 20);
+  move(2,1);
+  hline(' ', COLS-2);
+  print_ordered(bt);
 }
 void print_tree(node_t *p)
 {
@@ -158,6 +174,14 @@ void setup(void)
   addstr("s");
   attroff(A_REVERSE);
   addstr("ize | ");
+  attron(A_REVERSE);
+  addstr("d");
+  attroff(A_REVERSE);
+  addstr("elete | ");
+  attron(A_REVERSE);
+  addstr("r");
+  attroff(A_REVERSE);
+  addstr("emove element | ");
   move(1, 1);
   atexit((void (*)(void))&endwin);
   refresh();
@@ -179,4 +203,70 @@ void print_ordered(node_t *p)
   printw("%d, ", p->val);
   if (p->right)
     print_ordered(p->right);
+}
+void free_tree(node_t *p)
+{
+  if (p == NULL)
+    return;
+  free_tree(p->left);
+  free_tree(p->right);
+  free(p);
+  move(2,1);
+  hline(' ', COLS-2);
+  return;
+}
+node_t *find_and_delete_element(node_t *p, int val)
+{
+  if (p == NULL)
+    return p;
+  if (p->val == val)
+    return del_element_recurs(p);
+  else if (val < p->val)
+    p->left = find_and_delete_element(p->left, val);
+  else
+    p->right = find_and_delete_element(p->right, val);
+  return p;
+}
+node_t *del_element_recurs(node_t *p)
+{
+  if (p->left) {
+    p->val = p->left->val;
+    p->left = del_element_recurs(p->left);
+  } else if (p->right) {
+    p->val = p->right->val;
+    p->right = del_element_recurs(p->right);
+  } else {
+    free(p);
+    p = NULL;
+  }
+  return p;
+}
+void request_element_and_remove()
+{
+  int i = 0;
+  char c;
+
+  move(1, 1);
+  hline(' ', COLS - 2);
+  addstr("Enter element to remove: ");
+  refresh();
+
+  while((c = getch()) != '\n') {
+    if (c == 'q')
+      exit(0);
+    if (!isdigit(c)) {
+      print_err("Must be a number.");
+      return getnum();
+    } else {
+      i *= 10;
+      i += c - '0';
+    }
+  }
+  clear_err();
+  mvprintw(1, 1, "Input accepted. <%d>", i);
+  bt = find_and_delete_element(bt, i);
+  hline(' ', 20);
+  move(2,1);
+  hline(' ', COLS-2);
+  print_ordered(bt);
 }
